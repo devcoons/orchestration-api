@@ -49,7 +49,7 @@ namespace Statistics
 				temporary="[";
 				for (auto app1 = self->applications.begin(); app1 != self->applications.end();)
 				{
-					temporary += "{\"pid\":\"" + std::to_string((*app1)->sharedMemoryPtr->getPId()) +"\",\"name\":\"" + ((*app1)->sharedMemoryPtr->getAppName()) +"\",\"goal\":\""+std::to_string((*app1)->sharedMemoryPtr->getGoalThroughput())+"\",\"current\":\""+std::to_string((*app1)->sharedMemoryPtr->getCurrThroughput())+"\",\"realcurrent\":\""+std::to_string((*app1)->sharedMemoryPtr->getCNAThroughput())+"\",\"error\":\""+std::to_string((*app1)->sharedMemoryPtr->getAverageError())+"\",\"realerror\":\""+std::to_string((*app1)->sharedMemoryPtr->getCurrentError())+"\",\"pgoal\":\""+std::to_string((*app1)->sharedMemoryPtr->getNewGoal())+"\"},";	
+					temporary += "{\"pid\":\"" + std::to_string((*app1)->sharedMemoryPtr->processID) +"\",\"name\":\"" + ((*app1)->sharedMemoryPtr->processName) +"\",\"goal\":\""+std::to_string((*app1)->sharedMemoryPtr->statistics.getInitialGoalMs())+"\",\"current\":\""+std::to_string((*app1)->sharedMemoryPtr->statistics.getCurrentMs())+"\",\"realcurrent\":\""+std::to_string((*app1)->sharedMemoryPtr->statistics.getOffsetGoalMs())+"\",\"error\":\""+std::to_string((*app1)->sharedMemoryPtr->statistics.getAverageError())+"\",\"realerror\":\""+std::to_string((*app1)->sharedMemoryPtr->statistics.getCurrentError())+"\",\"pgoal\":\""+std::to_string((*app1)->sharedMemoryPtr->statistics.getPassesCounter())+"\"},";	
 					++app1;
 				}
 				if(temporary.substr( temporary.length()-1,1)==",")
@@ -116,9 +116,9 @@ namespace Statistics
 				for (auto app1 = self->applications.begin(); app1 != self->applications.end();)
 				{
 					for(int ll=0;ll<vect.size();ll++)
-					if(((*app1)->sharedMemoryPtr->getAppName()) == vect.at(ll))
+					if(((*app1)->sharedMemoryPtr->processName) == vect.at(ll))
 					{
-						(*app1)->sharedMemoryPtr->setGoalThroughput(std::stod(vect.at(ll+1)));
+						(*app1)->sharedMemoryPtr->statistics.setInitialGoalMs(std::stod(vect.at(ll+1)));
 					}
 					++app1;
 				}

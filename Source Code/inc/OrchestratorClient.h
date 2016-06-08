@@ -9,31 +9,32 @@
 	#include "Container.h"
 	#include "Client.h"
 
-
-namespace Orchestrator 
-{
-	class Client
+	using namespace std;
+		
+	namespace Orchestrator 
 	{
-		private:
-			int port;
-			std::string hostname;
-			
-			sem_t *semaphore;
-			std::shared_ptr<ShmObject<Container>> container;
-			
-		public:
-			Client(pid_t);
-			~Client();
-			void execute(void*);
-			void disconnect(void);
-			void setProfiling(int);
-			PolicyType getPolicy(void);
-			void setPolicy(PolicyType);
-			double getThroughput(void);
-			void connect(std::string, int);
-			void setThroughput(double, double, double);
-			void registerImplementation(ImplementationKernel, ImplementationType);
-			void deregisterImplementation(ImplementationKernel, ImplementationType);
-			void setAppName(std::string);
-	};		
-}
+		class Client
+		{
+			private:
+				int port;
+				sem_t *semaphore;
+				string hostname;
+				shared_ptr<ShmObject<Container>> container;
+				
+			public:
+				~Client();
+				Client(pid_t);
+				void execute(void*);
+				void disconnect(void);
+				void setPriority(int);
+				void setProfiling(int);
+				void setAppName(string);
+				void connect(string, int);
+				double getCurrentMs(void);
+				IndividualPolicyType getPolicy(void);
+				void setPolicy(IndividualPolicyType);
+				void setGoalMs(double, double, double);
+				void registerImplementation(ImplementationKernel, ImplementationType);
+				void deregisterImplementation(ImplementationKernel, ImplementationType);
+		};		
+	}

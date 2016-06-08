@@ -51,9 +51,9 @@ namespace Orchestrator
 			for (auto app = applications.begin(); app != applications.end();)
 			{
 			
-				if ((*app)->sharedMemoryPtr->getState() == ApplicationState::DeregisterApplication)
+				if ((*app)->sharedMemoryPtr->state == ApplicationState::DeregisterApplication)
 				{
-					std::cout << "Application :" << (*app)->sharedMemoryPtr->pid << " Deregistration Requested. [Removing shared pointer]" << std::endl;
+					std::cout << "Application :" << (*app)->sharedMemoryPtr->processID << " Deregistration Requested. [Removing shared pointer]" << std::endl;
 					(*app)->Delete();
 					
 					applications.erase(applications.begin() + i);
@@ -61,12 +61,12 @@ namespace Orchestrator
 				}
 				else if ((*app)->numberOfProcesses() <2)
 				{
-					std::cout << "Application :" << (*app)->sharedMemoryPtr->pid << " Unexpected Closed. [Removing shared pointer]" << std::endl;
+					std::cout << "Application :" << (*app)->sharedMemoryPtr->processID << " Unexpected Closed. [Removing shared pointer]" << std::endl;
 					(*app)->Delete();
 					applications.erase(applications.begin() + i);
 					semaphores.erase(semaphores.begin() + i);
 				}
-				else if ((*app)->sharedMemoryPtr->getState() == ApplicationState::Pause)
+				else if ((*app)->sharedMemoryPtr->state == ApplicationState::Pause)
 				{
 					if ((*app)->sharedMemoryPtr->getCurrentProfiling() == true)
 					{
@@ -74,28 +74,35 @@ namespace Orchestrator
 					}
 					else if ((*app)->sharedMemoryPtr->getNextProfiling() == true)
 					{
-						index = (*app)->sharedMemoryPtr->getSelectedManagerIndex();
-						(*app)->sharedMemoryPtr->setSelectedManagerIndex(index + 1);
+						(*app)->sharedMemoryPtr->selectedKernelManager+=1;
 						(*app)->sharedMemoryPtr->decreaseProfiling();
 					}
 					else
 					{	
-						Manager* ptr = (Manager*)shmat((*app)->sharedMemoryPtr->managers.sharedMemoryID, 0, 0);
-						newIndex = (*app)->sharedMemoryPtr->getSelectedManagerIndex();
-						newDeltaThroughput = fabs((*app)->sharedMemoryPtr->getGoalThroughput() - ((*app)->sharedMemoryPtr->getCurrThroughput() / (*app)->sharedMemoryPtr->getCounter() *((*app)->sharedMemoryPtr->getCounter() - 1) + ptr[newIndex].averageThroughput / ((*app)->sharedMemoryPtr->getCounter())));
-						newDeltaThroughput1=0;
-						switch ((*app)->sharedMemoryPtr->getPolicy())
+						switch((*app)->sharedMemoryPtr->policy)
 						{
-						case PolicyType::Balanced:		
+							case IndividualPolicyType::Balanced:
+							case IndividualPolicyType::Powersaving:
+							case IndividualPolicyType::Performance:
+						break;
+						}
+				
+						Manager *ptr = (Manager*)shmat((*app)->sharedMemoryPtr->kernelManagers.sharedMemoryID, 0, 0);
+						newIndex = (*app)->sharedMemoryPtr->selectedKernelManager;
+						newDeltaThroughput =  (*app)->sharedMemoryPtr->statistics.getNextGoalDeviation(ptr[newIndex].getAverageMs());
+						newDeltaThroughput1=0;
+						switch ((*app)->sharedMemoryPtr->policy)
+						{
+						case IndividualPolicyType::Balanced:		
 						
 							for (int j = 0; j < (*app)->sharedMemoryPtr->getManagers()->getSize(); j++)
 							{
-								if (ptr[j].averageThroughput == 0)
+								newDeltaThroughput1 =  (*app)->sharedMemoryPtr->statistics.getNextGoalDeviation(ptr[j].getAverageMs());
+								if (ptr[j].getAverageMs() == 0)
 								{
 									newIndex = j;
 									break;
 								}
-								newDeltaThroughput1 =  fabs((*app)->sharedMemoryPtr->getGoalThroughput() - ((*app)->sharedMemoryPtr->getCurrThroughput() / (*app)->sharedMemoryPtr->getCounter() *((*app)->sharedMemoryPtr->getCounter() - 1) + ptr[j].averageThroughput / ((*app)->sharedMemoryPtr->getCounter())));
 								if (newDeltaThroughput1 < newDeltaThroughput)
 								{
 									newIndex = j;	
@@ -103,16 +110,16 @@ namespace Orchestrator
 								}
 							}
 							
-							(*app)->sharedMemoryPtr->setSelectedManagerIndex(newIndex);
+							(*app)->sharedMemoryPtr->selectedKernelManager = newIndex;
 					
 							break;
-						case PolicyType::Performance:
+						case IndividualPolicyType::Performance:
 							
 						
 						
 						
 							break;
-						case PolicyType::Powersaving:
+						case IndividualPolicyType::Powersaving:
 							break;
 						}
 						shmdt(ptr);	
@@ -122,15 +129,15 @@ namespace Orchestrator
 					
 					std::cout << "App :: [";
 					std::cout.width(6);
-					std::cout << (*app)->sharedMemoryPtr->getPId();
+					std::cout << (*app)->sharedMemoryPtr->processID;
 					std::cout << "]  Selected Manager :: [";
 					std::cout.width(3); 
-					std::cout << (*app)->sharedMemoryPtr->selectedManager + 1;
+					std::cout << (*app)->sharedMemoryPtr->selectedKernelManager + 1;
 					std::cout << "]  Profiling :: [";
 					std::cout.width(4);
 					std::cout << (*app)->sharedMemoryPtr->getCurrentProfiling();
 					std::cout << "]" <<	std::endl;	
-					(*app)->sharedMemoryPtr->setState(ApplicationState::Execute);
+					(*app)->sharedMemoryPtr->state = ApplicationState::Execute;
 					sem_post(semaphores.at(i));
 					++i;
 					++app;
@@ -159,9 +166,9 @@ namespace Orchestrator
 		std::string temp = buffer;	
 		self->mux.lock();
 		self->applications.push_back(std::unique_ptr<ShmObject<Container>>(new ShmObject<Container>(std::stoi(temp))));	
-		self->semaphores.push_back(sem_open((std::to_string((self->applications.back())->sharedMemoryPtr->getPId())).c_str(), 0));
+		self->semaphores.push_back(sem_open((std::to_string((self->applications.back())->sharedMemoryPtr->processID)).c_str(), 0));
 
-		std::cout << "Application :" << (self->applications.back())->sharedMemoryPtr->getPId() << " Registered. [Adding shared pointer]" << std::endl;
+		std::cout << "Application :" << (self->applications.back())->sharedMemoryPtr->processID << " Registered. [Adding shared pointer]" << std::endl;
 		self->mux.unlock();
 	}
 

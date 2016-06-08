@@ -2,117 +2,82 @@
 
 namespace Orchestrator
 {
-	/*
-	
-	*/
+
 	Client::Client(pid_t arg)
 	{
 		container = std::shared_ptr<ShmObject<Container>> (new ShmObject<Container>());
-		container->sharedMemoryPtr->setPId(arg);
+		container->sharedMemoryPtr->processID = arg;
 		semaphore = sem_open((std::to_string(arg)).c_str(), O_CREAT, 0644, 1);
 	}
 
-	/*
-	
-	*/	
 	Client::~Client()
 	{
 		
 	}
 
-	/*
-	
-	*/
 	void Client::execute(void* arg)
 	{
-		while (container->sharedMemoryPtr->getState() != ApplicationState::Execute)
+		while (container->sharedMemoryPtr->state != ApplicationState::Execute)
 			sem_wait(semaphore);
 
-		if (container->sharedMemoryPtr->getSelectedManagerIndex() != -1)
+		if (container->sharedMemoryPtr->selectedKernelManager != -1)
 			container->sharedMemoryPtr->execute(arg);
 		
-		container->sharedMemoryPtr->setState(ApplicationState::Pause);
+		container->sharedMemoryPtr->state = ApplicationState::Pause;
 	}
 
-	/*
-	
-	*/
-	void Client::setAppName(std::string arg)
+	void Client::setAppName(std::string _value)
 	{
-		container->sharedMemoryPtr->setAppName(arg);
+		container->sharedMemoryPtr->processName = _value;
 	}
 
-	/*
-	
-	*/
-	void Client::setPolicy(PolicyType policy)
+	void Client::setPolicy(IndividualPolicyType _value)
 	{
-		container->sharedMemoryPtr->setPolicy(policy);
+		container->sharedMemoryPtr->policy = _value;
 	}
 
-	/*
-	
-	*/
-	void Client::setThroughput(double goal, double min, double max)
+	void Client::setGoalMs(double _goalMs, double _minMs, double _maxMs)
 	{
-		container->sharedMemoryPtr->setMinThroughput(min);
-		container->sharedMemoryPtr->setMaxThroughput(max);
-		container->sharedMemoryPtr->setGoalThroughput(goal);
+		container->sharedMemoryPtr->statistics.setInitialGoalMs(_goalMs);
+		container->sharedMemoryPtr->statistics.setMinimumGoalMs(_minMs);
+		container->sharedMemoryPtr->statistics.setMaximumGoalMs(_maxMs);
 	}
 
-	/*
-	
-	*/
 	void Client::connect(std::string host, int port)
 	{
 		this->hostname = host;
 		this->port = port;
 		::Client client(host, port);
-		container->sharedMemoryPtr->setState(ApplicationState::RegisterApplication);
+		container->sharedMemoryPtr->state = ApplicationState::RegisterApplication;
 		client.send(std::to_string(container->sharedMemoryID));
 		client.close();
 	}
 	
-	/*
-	
-	*/
 	void Client::disconnect()
 	{
-		container->sharedMemoryPtr->setState(ApplicationState::DeregisterApplication);
+		container->sharedMemoryPtr->state = ApplicationState::DeregisterApplication;
 	}
 	
-	/*
-	
-	*/
 	void Client::registerImplementation(ImplementationKernel function,ImplementationType type)
 	{
-		container->sharedMemoryPtr->setState(ApplicationState::RegisterApplication);
+		container->sharedMemoryPtr->state = ApplicationState::RegisterApplication;
 		container->sharedMemoryPtr->registerImplementation(function,type);
 	}
 	
-	/*
-	
-	*/
 	void Client::deregisterImplementation(ImplementationKernel function, ImplementationType type)
 	{
-		container->sharedMemoryPtr->setState(ApplicationState::DeregisterApplication);
+		container->sharedMemoryPtr->state = ApplicationState::DeregisterApplication;
 		container->sharedMemoryPtr->deregisterImplementation(function, type);
 	}
 	
-	/*
-	
-	*/
-	double  Client::getThroughput()
+	double  Client::getCurrentMs()
 	{
-		return container->sharedMemoryPtr->getCurrThroughput();
+		return container->sharedMemoryPtr->statistics.getCurrentMs();
 	}
 	
-	/*
-	
-	*/
 	void Client::setProfiling(int arg)
 	{
-		container->sharedMemoryPtr->setState(ApplicationState::Pause);
+		container->sharedMemoryPtr->state = ApplicationState::Pause;
 		container->sharedMemoryPtr->setProfiling(arg);
 	}
 }
