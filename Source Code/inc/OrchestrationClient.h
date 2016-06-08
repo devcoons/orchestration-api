@@ -11,7 +11,7 @@
 
 	using namespace std;
 		
-	namespace Orchestrator 
+	namespace Orchestration 
 	{
 		class Client
 		{

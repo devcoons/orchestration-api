@@ -1,6 +1,6 @@
-#include "OrchestratorClient.h"
+#include "OrchestrationClient.h"
 
-namespace Orchestrator
+namespace Orchestration
 {
 
 	Client::Client(pid_t arg)

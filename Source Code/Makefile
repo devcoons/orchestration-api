@@ -1,5 +1,5 @@
 # Project Name
-PRJNAME=throughput
+PRJNAME=orchestration
 VERSION := 0.3
 
 # Filepaths
@@ -50,15 +50,15 @@ cleanall:
 	$(RM) $(BINDIR)/*
 
 install:
-	$(shell mkdir /usr/include/throughput)
+	$(shell mkdir /usr/include/orchestration)
 	$(shell cp $(BINDIR)/lib$(PRJNAME).so.$(VERSION) /usr/lib/)
-	$(shell find -L $(INCDIR) -name '*.h' -exec cp {} '/usr/include/throughput/' ';')
+	$(shell find -L $(INCDIR) -name '*.h' -exec cp {} '/usr/include/orchestration/' ';')
 	$(shell ln -s /usr/lib/lib$(PRJNAME).so.$(VERSION) /usr/lib/lib$(PRJNAME).so)
 	$(shell ldconfig)
 	@echo "Installation Completed";
 uninstall:
 	$(shell rm /usr/lib/lib$(PRJNAME).so)
 	$(shell rm /usr/lib/lib$(PRJNAME).so.*.*)
-	$(shell rm -r  /usr/include/throughput/)
+	$(shell rm -r  /usr/include/orchestration/)
 	$(shell ldconfig)
 	@echo "Uninstallation Completed";

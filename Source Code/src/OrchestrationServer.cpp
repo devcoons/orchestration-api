@@ -1,6 +1,6 @@
-#include "OrchestratorServer.h"
+#include "OrchestrationServer.h"
 
-namespace Orchestrator
+namespace Orchestration
 {
 	Server::Server()
 	{	
@@ -31,7 +31,7 @@ namespace Orchestrator
 		serverStatistics.initialize(portStatistics);
 		serverStatistics.assignCallback(Statistics::Callback,this);
 		server.initialize(port);
-		server.assignCallback(Orchestrator::Server::callback, this);	
+		server.assignCallback(Orchestration::Server::callback, this);	
 		serverStatistics.execute();
 		server.execute();
 	}
@@ -160,7 +160,7 @@ namespace Orchestrator
 		size_t bytecount;
 		char buffer[1024];
 		int buffer_len = 1024;
-		Orchestrator::Server * self = static_cast<Orchestrator::Server*>(object);	
+		Orchestration::Server * self = static_cast<Orchestration::Server*>(object);	
 		memset(buffer, 0, buffer_len);
 		bytecount = recv(parameters->clientSocket, buffer, buffer_len, 0);
 		std::string temp = buffer;	

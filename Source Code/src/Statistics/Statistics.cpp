@@ -30,7 +30,7 @@ namespace Statistics
 			vector<std::string> cpu3 ;
 			vector<std::string> cpu4;
 			vector<std::string> cpu5 ;
-		Orchestrator::Server * self = static_cast<Orchestrator::Server*>(object);	
+		Orchestration::Server * self = static_cast<Orchestration::Server*>(object);	
 		int n;
 		while(1)
 		{
