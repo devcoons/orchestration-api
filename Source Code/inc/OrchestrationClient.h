@@ -1,13 +1,15 @@
 #pragma once
-	#include <vector>
+
+	#include <vector>	
 	#include <fcntl.h>
-	#include <iostream>
-	#include <semaphore.h>
-	#include <sys/mman.h>
 	#include <sstream>
+	#include <iostream>
+	#include <sys/mman.h>
+	#include <semaphore.h>
 	
-	#include "Container.h"
 	#include "Client.h"
+	#include "AppContainer.h"
+	
 
 	using namespace std;
 		
@@ -19,7 +21,7 @@
 				int port;
 				sem_t *semaphore;
 				string hostname;
-				shared_ptr<ShmObject<Container>> container;
+				shared_ptr<ShmObject<AppContainer>> container;
 				
 			public:
 				~Client();
@@ -28,9 +30,10 @@
 				void disconnect(void);
 				void setPriority(int);
 				void setProfiling(int);
-				void setAppName(string);
+				void setAppName(char *);
 				void connect(string, int);
 				double getCurrentMs(void);
+				double getAverageMs(void);
 				IndividualPolicyType getPolicy(void);
 				void setPolicy(IndividualPolicyType);
 				void setGoalMs(double, double, double);

@@ -4,7 +4,7 @@
 	
 	using namespace std;
 		
-	class AppStats
+	class AppTracker
 	{
 		private:
 			volatile double offsetGoalMs;
@@ -19,16 +19,16 @@
 			
 		protected:
 		public:
-			AppStats();
-			~AppStats();	
+			AppTracker();
+			~AppTracker();	
 			void setInitialGoalMs(double);
 			void setOffsetGoalMs(double);
 			void setCurrentMs(double);
 			void setAverageMs(double);
 			void setMinimumGoalMs(double);
 			void setMaximumGoalMs(double);
-			void setCurrentError(double);
-			void setAverageError(double);
+			void updateCurrentError(void);
+			void updateAverageError(void);
 			void setPassesCounter(double);	
 			void increasePassesCounter(void);
 			double getInitialGoalMs(void);

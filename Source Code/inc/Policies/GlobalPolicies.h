@@ -2,14 +2,15 @@
 
 	typedef enum
 	{
-		Performance,
+		Free,
 		Powersaving
 	}
 	GlobalPolicyType;
 
-	class GlobalPolicy
+	class GlobalPolicies
 	{
 	public:
-		GlobalPolicy();
-		~GlobalPolicy();
+		static double overallAmpereGoal;
+		static void Free(void *, void *);
+		static void Powersaving(void *,void *);
 	};

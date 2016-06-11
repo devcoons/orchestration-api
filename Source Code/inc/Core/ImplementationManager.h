@@ -2,25 +2,22 @@
 
 	#include <chrono>
 	#include <functional>
-	#include "X64Xeon.h"
-	#include "ARMJuno.h"
-	#include "X64VMachine.h"
 
 	typedef std::function<void(void*)> ImplementationKernel;
-
+	
 	typedef enum
 	{
-		JunoCPUA57,
-		JunoCPUA53,
-		JunoFPGA,
-		X64XeonCPU,
-		X64XeonPCI,
-		X64VMachineCPU1,
-		X64VMachineCPU2
+		XeonCPU,
+		ARMA57,
+		ARMA53,		
+		VMCPU1,
+		VMCPU2,
+		FPGA,
+		PCI
 	}
 	ImplementationType;
-
-	class Manager
+	
+	class ImplementationManager
 	{
 		private:
 			double currentMs;
@@ -33,8 +30,8 @@
 			ImplementationType type;
 			ImplementationKernel function;
 			
-			Manager();
-			~Manager();
+			ImplementationManager();
+			~ImplementationManager();
 			void setCurrentMs(double);
 			void setAverageMs(double);
 			void setProfiling(double);

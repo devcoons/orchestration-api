@@ -3,13 +3,13 @@
 	#include <thread>
 	#include <atomic>
 	#include <iostream>
-	#include "ShmList.h"
-	#include "Manager.h"
 	#include <algorithm>
-	#include "AppStats.h"
+	#include "ShmList.h"	
+	#include "AppTracker.h"
 	#include "ShmObject.h"
 	#include "Semaphore.h"
 	#include "IndividualPolicies.h"
+	#include "ImplementationManager.h"
 
 	using namespace std;
 	
@@ -26,7 +26,7 @@
 	}   
 	ApplicationState;
 
-	class Container
+	class AppContainer
 	{
 		private:
 
@@ -34,25 +34,25 @@
 			
 		public:
 			pid_t processID;
-			string processName;
+			char processName[100];
 			ApplicationState state;
 			Semaphore semaphore;
-			AppStats statistics;
+			AppTracker tracker;
 			mutex atomicityMutex;
 			
 			IndividualPolicyType policy;
-			ShmList<Manager> kernelManagers;
+			ShmList<ImplementationManager> kernelManagers;
 			int selectedKernelManager;
 			
-			Container();
-			~Container();
+			AppContainer();
+			~AppContainer();
 	
 			bool getCurrentProfiling();
 			bool getNextProfiling();
 			void decreaseProfiling();
 			void execute(void * );
 			void setProfiling(int );
-			ShmList<Manager>* getManagers();
+			ShmList<ImplementationManager>* getManagers();
 			
 			void registerImplementation(ImplementationKernel, ImplementationType);
 			void deregisterImplementation(ImplementationKernel, ImplementationType);

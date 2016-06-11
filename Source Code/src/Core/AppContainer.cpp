@@ -1,31 +1,32 @@
-#include "Container.h"
+#include "AppContainer.h"
 
-Container::Container()
+AppContainer::AppContainer()
 {
 	processID = -1;
 	selectedKernelManager = -1;
-	processName = std::string();
-	statistics.setOffsetGoalMs(0);
-	statistics.setInitialGoalMs(0);	
-	statistics.setCurrentMs(0);
-	statistics.setAverageMs(0);
-	statistics.setMinimumGoalMs(0);
-	statistics.setMaximumGoalMs(0);
-	statistics.setCurrentError(0);
-	statistics.setAverageError(0);
-	statistics.setPassesCounter(0);
+	processName[0] = '\0';
+	tracker.setOffsetGoalMs(0);
+	tracker.setInitialGoalMs(0);	
+	tracker.setCurrentMs(0);
+	tracker.setMinimumGoalMs(0);
+	tracker.setMaximumGoalMs(0);
+	tracker.setPassesCounter(0);
+	tracker.updateCurrentError();
+	tracker.updateAverageError();
 	policy = IndividualPolicyType::Balanced;
 	state = ApplicationState::RegisterApplication;
 }
 
-Container::~Container()
+AppContainer::~AppContainer()
 {
 	
 }
 
-void Container::execute(void * arg) 
+void AppContainer::execute(void * arg) 
 {
-	Manager* ptr = (Manager*)shmat(this->kernelManagers.sharedMemoryID, 0, 0);
+	if(selectedKernelManager < 0)
+		return;
+	ImplementationManager* ptr = (ImplementationManager*)shmat(this->kernelManagers.sharedMemoryID, 0, 0);
 	
 	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 	ptr[selectedKernelManager].function(arg);
@@ -38,18 +39,18 @@ void Container::execute(void * arg)
 	ptr[selectedKernelManager].setCurrentMs(deltaTime);
 	ptr[selectedKernelManager].setAverageMs(deltaTime);
 		
-	statistics.increasePassesCounter();
-	statistics.setCurrentMs(deltaTime);
-	statistics.setAverageMs(deltaTime);
-	statistics.setCurrentError(deltaTime);
-	statistics.setAverageError(deltaTime);
+	tracker.increasePassesCounter();
+	tracker.setCurrentMs(deltaTime);
+	tracker.setAverageMs(deltaTime);
+	tracker.updateCurrentError();
+	tracker.updateAverageError();
 	
 	shmdt(ptr);	
 }
 
-void Container::setProfiling(int arg)
+void AppContainer::setProfiling(int arg)
 {
-	Manager* ptr = (Manager*)shmat(this->kernelManagers.sharedMemoryID, 0, 0);
+	ImplementationManager* ptr = (ImplementationManager*)shmat(this->kernelManagers.sharedMemoryID, 0, 0);
 	
 	for (int i = 0; i < this->kernelManagers.getSize(); i++)
 		ptr[i].setProfiling(arg);
@@ -57,17 +58,17 @@ void Container::setProfiling(int arg)
 	shmdt(ptr);	
 }
 
-ShmList<Manager>* Container::getManagers()
+ShmList<ImplementationManager>* AppContainer::getManagers()
 {
 	return &kernelManagers;	
 }
 
-void Container::registerImplementation(ImplementationKernel _function, ImplementationType type)
+void AppContainer::registerImplementation(ImplementationKernel _function, ImplementationType type)
 {
 	this->kernelManagers.insertElement();
-	Manager* ptr = (Manager*)shmat(this->kernelManagers.sharedMemoryID, 0, 0);
+	ImplementationManager* ptr = (ImplementationManager*)shmat(this->kernelManagers.sharedMemoryID, 0, 0);
 	
-	ptr[this->kernelManagers.getSize() - 1] = Manager();
+	ptr[this->kernelManagers.getSize() - 1] = ImplementationManager();
 	ptr[this->kernelManagers.getSize() - 1].function = _function;
 	ptr[this->kernelManagers.getSize() - 1].type = type;
 	ptr[this->kernelManagers.getSize() - 1].setPassesCounter(0);
@@ -78,9 +79,9 @@ void Container::registerImplementation(ImplementationKernel _function, Implement
 	shmdt(ptr);	
 }
 
-void Container::deregisterImplementation(ImplementationKernel function, ImplementationType type)
+void AppContainer::deregisterImplementation(ImplementationKernel function, ImplementationType type)
 {
-	Manager* ptr = (Manager*)shmat(this->kernelManagers.sharedMemoryID, 0, 0);
+	ImplementationManager* ptr = (ImplementationManager*)shmat(this->kernelManagers.sharedMemoryID, 0, 0);
 	
 	for (int i = 0; i < this->kernelManagers.getSize(); i++)
 		if (ptr[this->kernelManagers.getSize() - 1].type == type)
@@ -94,28 +95,33 @@ void Container::deregisterImplementation(ImplementationKernel function, Implemen
 }
 
 
-bool Container::getCurrentProfiling()
+bool AppContainer::getCurrentProfiling()
 {
-	Manager* ptr = (Manager*)shmat(this->kernelManagers.sharedMemoryID, 0, 0);	
+	if(selectedKernelManager <0)
+		return false;
+	ImplementationManager* ptr = (ImplementationManager*)shmat(this->kernelManagers.sharedMemoryID, 0, 0);	
 	int profiling =  ptr[selectedKernelManager].getProfiling();	
 	shmdt(ptr);	
 	return profiling > 0 ? true : false;
 }
 
-bool Container::getNextProfiling()
+bool AppContainer::getNextProfiling()
 {
+	if(selectedKernelManager <0)
+		return false;
+	
 	if (selectedKernelManager + 1 >= this->kernelManagers.getSize())
 		return false;
 	
-	Manager* ptr = (Manager*)shmat(this->kernelManagers.sharedMemoryID, 0, 0);	
+	ImplementationManager* ptr = (ImplementationManager*)shmat(this->kernelManagers.sharedMemoryID, 0, 0);	
 	int profiling =  ptr[selectedKernelManager+1].getProfiling();	
 	shmdt(ptr);		
 	return profiling > 0 ? true : false;
 }
 
-void Container::decreaseProfiling()
+void AppContainer::decreaseProfiling()
 {
-	Manager* ptr = (Manager*)shmat(this->kernelManagers.sharedMemoryID, 0, 0);	
+	ImplementationManager* ptr = (ImplementationManager*)shmat(this->kernelManagers.sharedMemoryID, 0, 0);	
 	ptr[selectedKernelManager+1].decreaseProfiling();	
 	shmdt(ptr);	
 }

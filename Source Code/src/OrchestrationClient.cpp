@@ -1,11 +1,12 @@
 #include "OrchestrationClient.h"
-
+#include <stdio.h>
+#include <stdlib.h>
 namespace Orchestration
 {
 
 	Client::Client(pid_t arg)
 	{
-		container = std::shared_ptr<ShmObject<Container>> (new ShmObject<Container>());
+		container = std::shared_ptr<ShmObject<AppContainer>> (new ShmObject<AppContainer>());
 		container->sharedMemoryPtr->processID = arg;
 		semaphore = sem_open((std::to_string(arg)).c_str(), O_CREAT, 0644, 1);
 	}
@@ -26,9 +27,9 @@ namespace Orchestration
 		container->sharedMemoryPtr->state = ApplicationState::Pause;
 	}
 
-	void Client::setAppName(std::string _value)
+	void Client::setAppName(char * _value)
 	{
-		container->sharedMemoryPtr->processName = _value;
+		strcpy(container->sharedMemoryPtr->processName,_value);
 	}
 
 	void Client::setPolicy(IndividualPolicyType _value)
@@ -38,9 +39,9 @@ namespace Orchestration
 
 	void Client::setGoalMs(double _goalMs, double _minMs, double _maxMs)
 	{
-		container->sharedMemoryPtr->statistics.setInitialGoalMs(_goalMs);
-		container->sharedMemoryPtr->statistics.setMinimumGoalMs(_minMs);
-		container->sharedMemoryPtr->statistics.setMaximumGoalMs(_maxMs);
+		container->sharedMemoryPtr->tracker.setInitialGoalMs(_goalMs);
+		container->sharedMemoryPtr->tracker.setMinimumGoalMs(_minMs);
+		container->sharedMemoryPtr->tracker.setMaximumGoalMs(_maxMs);
 	}
 
 	void Client::connect(std::string host, int port)
@@ -72,7 +73,12 @@ namespace Orchestration
 	
 	double  Client::getCurrentMs()
 	{
-		return container->sharedMemoryPtr->statistics.getCurrentMs();
+		return container->sharedMemoryPtr->tracker.getCurrentMs();
+	}
+	
+	double  Client::getAverageMs()
+	{
+		return container->sharedMemoryPtr->tracker.getAverageMs();
 	}
 	
 	void Client::setProfiling(int arg)
