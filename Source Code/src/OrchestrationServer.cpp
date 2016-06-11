@@ -98,7 +98,7 @@ namespace Orchestration
 						}
 						if((*app)->sharedMemoryPtr->tracker.getOffsetGoalMs()!=0)
 						{
-							offsetDecreasing = (*app)->sharedMemoryPtr->tracker.getOffsetGoalMs()/(priority+25)<5;
+							offsetDecreasing = (*app)->sharedMemoryPtr->tracker.getOffsetGoalMs()/((*app)->sharedMemoryPtr->priority+25)<5;
 							if((*app)->sharedMemoryPtr->tracker.getOffsetGoalMs()>0)
 							{
 								offsetDecreasing = offsetDecreasing < 5 ? 5 : offsetDecreasing;

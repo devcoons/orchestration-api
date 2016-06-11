@@ -18,6 +18,7 @@ namespace Orchestration
 
 	void Client::execute(void* arg)
 	{
+		setpriority(PRIO_PROCESS, container->sharedMemoryPtr->processID, container->sharedMemoryPtr->priority);
 		while (container->sharedMemoryPtr->state != ApplicationState::Execute)
 			sem_wait(semaphore);
 	
@@ -85,5 +86,12 @@ namespace Orchestration
 	{
 		container->sharedMemoryPtr->state = ApplicationState::Pause;
 		container->sharedMemoryPtr->setProfiling(arg);
+	}
+	
+	void Client::setPriority(int arg)
+	{
+		container->sharedMemoryPtr->priority = arg;
+		setpriority(PRIO_PROCESS, container->sharedMemoryPtr->processID, arg);
+		
 	}
 }

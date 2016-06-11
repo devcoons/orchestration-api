@@ -78,7 +78,7 @@
 				temporary = self->stsService.retrieveUsage();
 				n = write(parameters->clientSocket,temporary.c_str(),temporary.length());		
 			}
-			else if(temp.find("goal")!= std::string::npos)
+			else if(temp.find("setms")!= std::string::npos)
 			{
 				std::vector<std::string> vect;
 				std::stringstream ss(temp);
@@ -93,6 +93,51 @@
 						if(((*app1)->sharedMemoryPtr->processName) == vect.at(ll))
 						{
 							(*app1)->sharedMemoryPtr->tracker.setInitialGoalMs(std::stod(vect.at(ll+1)));
+							(*app1)->sharedMemoryPtr->tracker.setMinimumGoalMs(std::stod(vect.at(ll+2)));
+							(*app1)->sharedMemoryPtr->tracker.setMaximumGoalMs(std::stod(vect.at(ll+3)));
+						}
+						++app1;
+					}
+				self->mux.unlock();
+			}
+			else if(temp.find("setpriority")!= std::string::npos)
+			{
+				std::vector<std::string> vect;
+				std::stringstream ss(temp);
+				std::string ls;
+				std::string word;
+				while( std::getline(ss, word, ':') )
+					vect.push_back(word);
+				self->mux.lock();
+					for (auto app1 = self->applications.begin(); app1 != self->applications.end();)
+					{
+						for(int ll=0;ll<vect.size();ll++)
+						if(((*app1)->sharedMemoryPtr->processName) == vect.at(ll))
+						{
+							(*app1)->sharedMemoryPtr->priority = std::stod(vect.at(ll+1));
+						}
+						++app1;
+					}
+				self->mux.unlock();
+			}
+			else if(temp.find("setipolicy")!= std::string::npos)
+			{
+				std::vector<std::string> vect;
+				std::stringstream ss(temp);
+				std::string ls;
+				std::string word;
+				while( std::getline(ss, word, ':') )
+					vect.push_back(word);
+				self->mux.lock();
+					for (auto app1 = self->applications.begin(); app1 != self->applications.end();)
+					{
+						for(int ll=0;ll<vect.size();ll++)
+						if(((*app1)->sharedMemoryPtr->processName) == vect.at(ll))
+						{
+							if(vect.at(ll+1) == "Restricted")
+								(*app1)->sharedMemoryPtr->policy = (IndividualPolicyType::Restricted);
+							else
+								(*app1)->sharedMemoryPtr->policy = (IndividualPolicyType::Balanced);
 						}
 						++app1;
 					}
