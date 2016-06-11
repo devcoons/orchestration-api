@@ -51,6 +51,7 @@
 	void Server::callback(Parameters * p)
 	{
 		if (Server::callbackFunction != NULL)
-			Server::callbackFunction(p, this->callbackObject);	
+			Server::callbackFunction(p, this->callbackObject);
+			
 		free(p);
 	}

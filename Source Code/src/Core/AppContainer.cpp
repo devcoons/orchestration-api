@@ -2,12 +2,13 @@
 
 AppContainer::AppContainer()
 {
+	priority = 0;
 	processID = -1;
-	selectedKernelManager = -1;
 	processName[0] = '\0';
-	tracker.setOffsetGoalMs(0);
-	tracker.setInitialGoalMs(0);	
+	selectedKernelManager = -1;
 	tracker.setCurrentMs(0);
+	tracker.setOffsetGoalMs(0);
+	tracker.setInitialGoalMs(0);
 	tracker.setMinimumGoalMs(0);
 	tracker.setMaximumGoalMs(0);
 	tracker.setPassesCounter(0);
@@ -25,7 +26,7 @@ AppContainer::~AppContainer()
 void AppContainer::execute(void * arg) 
 {
 	if(selectedKernelManager < 0)
-		return;
+		return ;
 	ImplementationManager* ptr = (ImplementationManager*)shmat(this->kernelManagers.sharedMemoryID, 0, 0);
 	
 	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();

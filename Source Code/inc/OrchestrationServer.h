@@ -1,14 +1,18 @@
 #pragma once
 
-	#include <vector>	
+	#include <vector>
+	#include <chrono>	
 	#include <fcntl.h>
 	#include <sstream>
+	#include <signal.h>
+	#include <unistd.h>
 	#include <iostream>
 	#include <sys/mman.h>
 	#include <semaphore.h>
-	
+	#include <sys/resource.h>
 	#include "AppService.h"
 	#include "StdService.h"
+	#include "StsService.h"
 	#include "AppContainer.h"
 
 
@@ -21,10 +25,10 @@
 			private:
 				AppService appService;
 				StdService stdService;
-
+				
 			public:	
 				mutex mux;
-
+				StsService stsService;
 				long long counter;
 				uint32_t loopRate;
 				bool active;

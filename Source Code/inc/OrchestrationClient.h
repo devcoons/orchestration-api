@@ -2,10 +2,13 @@
 
 	#include <vector>	
 	#include <fcntl.h>
+	#include <stdio.h>
 	#include <sstream>
+	#include <stdlib.h>
 	#include <iostream>
 	#include <sys/mman.h>
 	#include <semaphore.h>
+	#include <sys/resource.h>
 	
 	#include "Client.h"
 	#include "AppContainer.h"

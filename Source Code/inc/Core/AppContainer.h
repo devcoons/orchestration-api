@@ -1,9 +1,11 @@
 #pragma once
+
 	#include <mutex>
 	#include <thread>
 	#include <atomic>
 	#include <iostream>
 	#include <algorithm>
+	
 	#include "ShmList.h"	
 	#include "AppTracker.h"
 	#include "ShmObject.h"
@@ -33,28 +35,28 @@
 		protected:
 			
 		public:
+			int priority;
 			pid_t processID;
-			char processName[100];
-			ApplicationState state;
-			Semaphore semaphore;
 			AppTracker tracker;
+			Semaphore semaphore;
+			char processName[100];
 			mutex atomicityMutex;
-			
+			ApplicationState state;
+			int selectedKernelManager;
 			IndividualPolicyType policy;
 			ShmList<ImplementationManager> kernelManagers;
-			int selectedKernelManager;
 			
 			AppContainer();
 			~AppContainer();
-	
-			bool getCurrentProfiling();
-			bool getNextProfiling();
-			void decreaseProfiling();
+			
 			void execute(void * );
 			void setProfiling(int );
+			bool getNextProfiling();
+			void decreaseProfiling();
+			bool getCurrentProfiling();
+			
 			ShmList<ImplementationManager>* getManagers();
 			
 			void registerImplementation(ImplementationKernel, ImplementationType);
 			void deregisterImplementation(ImplementationKernel, ImplementationType);
-			
 	};

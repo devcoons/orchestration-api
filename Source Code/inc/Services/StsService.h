@@ -2,8 +2,11 @@
 
 	#include <mutex>
 	#include <thread>
+	#include <vector>
+	#include <chrono>
 	#include <unistd.h>
 	#include <iostream>
+	
 	#include <algorithm>
 	
 	#include "StatsJuno.h"
@@ -21,16 +24,23 @@
 	} 
 	StatsDevice;
 		
-	class StatsService
+	class StsService
 	{
 		private:
+			bool active;
+			long refreshRate;
+			mutex privateMutex;
 			StatsDevice device;
-			StatsJuno junoStats; 	
+			StatsJuno junoStats;
 			
-		public:	
-			StatsService();
-			~StatsService();
-
+		public:
+			mutex mux1;
+			mutex mux2;
+			
+			StsService();
+			~StsService();
+			void execution();
+			static void update(void *);
 			void start(StatsDevice);
 			string retrieveUsage();
 			string retrieveSensors();

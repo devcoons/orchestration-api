@@ -1,14 +1,14 @@
 #include "OrchestrationClient.h"
-#include <stdio.h>
-#include <stdlib.h>
+
 namespace Orchestration
 {
 
 	Client::Client(pid_t arg)
-	{
+	{		
 		container = std::shared_ptr<ShmObject<AppContainer>> (new ShmObject<AppContainer>());
 		container->sharedMemoryPtr->processID = arg;
 		semaphore = sem_open((std::to_string(arg)).c_str(), O_CREAT, 0644, 1);
+		setpriority(PRIO_PROCESS, arg, container->sharedMemoryPtr->priority);
 	}
 
 	Client::~Client()
@@ -20,10 +20,10 @@ namespace Orchestration
 	{
 		while (container->sharedMemoryPtr->state != ApplicationState::Execute)
 			sem_wait(semaphore);
-
+	
 		if (container->sharedMemoryPtr->selectedKernelManager != -1)
 			container->sharedMemoryPtr->execute(arg);
-		
+				
 		container->sharedMemoryPtr->state = ApplicationState::Pause;
 	}
 
