@@ -39,9 +39,12 @@
 			
 			StsService();
 			~StsService();
-			void execution();
-			static void update(void *);
+			void execution();			
 			void start(StatsDevice);
 			string retrieveUsage();
 			string retrieveSensors();
+			static void update(void *);
+			double getFilteredPowerAvg();
+			double getFilteredCurrentAvg();
+			double getFilterUtilizationAvg();
 	};

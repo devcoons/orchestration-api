@@ -59,7 +59,7 @@
 				self->mux.lock();
 					for (auto app1 = self->applications.begin(); app1 != self->applications.end();)
 					{
-						temporary += "{\"pid\":\"" + std::to_string((*app1)->sharedMemoryPtr->processID) +"\",\"name\":\"" + ((*app1)->sharedMemoryPtr->processName) +"\",\"goal\":\""+std::to_string((*app1)->sharedMemoryPtr->tracker.getInitialGoalMs())+"\",\"min\":\""+std::to_string((*app1)->sharedMemoryPtr->tracker.getMinimumGoalMs())+"\",\"max\":\""+std::to_string((*app1)->sharedMemoryPtr->tracker.getMaximumGoalMs())+"\",\"averagems\":\""+std::to_string((*app1)->sharedMemoryPtr->tracker.getAverageMs())+"\",\"currentms\":\""+std::to_string((*app1)->sharedMemoryPtr->tracker.getCurrentMs())+"\",\"erroraverage\":\""+std::to_string((*app1)->sharedMemoryPtr->tracker.getAverageError())+"\",\"errorcurrent\":\""+std::to_string((*app1)->sharedMemoryPtr->tracker.getCurrentError())+"\",\"offset\":\""+std::to_string((*app1)->sharedMemoryPtr->tracker.getOffsetGoalMs())+"\"},";	
+						temporary += "{\"pid\":\"" + std::to_string((*app1)->sharedMemoryPtr->processID) +"\",\"name\":\"" + ((*app1)->sharedMemoryPtr->processName)+"\",\"initgoal\":\"" + std::to_string((*app1)->sharedMemoryPtr->tracker.getInitialGoalMs()) +"\",\"goal\":\""+std::to_string((*app1)->sharedMemoryPtr->tracker.getInitialGoalMs()+(*app1)->sharedMemoryPtr->tracker.getOffsetGoalMs())+"\",\"min\":\""+std::to_string((*app1)->sharedMemoryPtr->tracker.getMinimumGoalMs())+"\",\"max\":\""+std::to_string((*app1)->sharedMemoryPtr->tracker.getMaximumGoalMs())+"\",\"averagems\":\""+std::to_string((*app1)->sharedMemoryPtr->tracker.getAverageMs())+"\",\"currentms\":\""+std::to_string((*app1)->sharedMemoryPtr->tracker.getCurrentMs())+"\",\"erroraverage\":\""+std::to_string((*app1)->sharedMemoryPtr->tracker.getAverageError())+"\",\"errorcurrent\":\""+std::to_string((*app1)->sharedMemoryPtr->tracker.getCurrentError())+"\",\"offset\":\""+std::to_string((*app1)->sharedMemoryPtr->tracker.getOffsetGoalMs())+"\"},";	
 						++app1;
 					}
 				self->mux.unlock();
@@ -141,6 +141,62 @@
 						}
 						++app1;
 					}
+				self->mux.unlock();
+			}	
+			else if(temp=="getgpolicy")
+			{
+				temporary ="";
+				self->mux.lock();
+				switch(self->globalPolicy)
+				{
+					case GlobalPolicyType::Free:
+						temporary = "{\"gpolicy\":\"free\",\"value\":\""+std::to_string(self->policyGoal)+"\"}";
+						break;
+					case GlobalPolicyType::PowerBalancing:
+						temporary = "{\"gpolicy\":\"power\",\"value\":\""+std::to_string(self->policyGoal)+"\"}";
+						break;
+					case GlobalPolicyType::CurrentBalancing:
+						temporary = "{\"gpolicy\":\"current\",\"value\":\""+std::to_string(self->policyGoal)+"\"}";
+						break;
+					case GlobalPolicyType::UtilizationBalancing:
+						temporary = "{\"gpolicy\":\"util\",\"value\":\""+std::to_string(self->policyGoal)+"\"}";
+						break;					
+				}
+				self->mux.unlock();
+				temporary = self->stsService.retrieveUsage();
+				n = write(parameters->clientSocket,temporary.c_str(),temporary.length());		
+			}			
+			else if(temp.find("setgpolicy")!= std::string::npos)
+			{
+				std::vector<std::string> vect;
+				std::stringstream ss(temp);
+				std::string ls;
+				std::string word;
+				while( std::getline(ss, word, ':') )
+					vect.push_back(word);
+				self->mux.lock();
+
+				if(vect.at(1) == "Free")
+				{
+					self->globalPolicy = GlobalPolicyType::Free;
+					self->policyGoal = 0;
+				}
+				if(vect.at(1) == "PowerBalancing")
+				{
+					self->globalPolicy = GlobalPolicyType::PowerBalancing;
+					self->policyGoal = stod(vect.at(2));
+				}
+				if(vect.at(1) == "CurrentBalancing")
+				{
+					self->globalPolicy = GlobalPolicyType::CurrentBalancing;
+					self->policyGoal = stod(vect.at(2));
+				}
+				if(vect.at(1) == "UtilizationBalancing")
+				{
+					self->globalPolicy = GlobalPolicyType::UtilizationBalancing;
+					self->policyGoal = stod(vect.at(2));
+				}
+				
 				self->mux.unlock();
 			}
 			else if(temp.find("stop")!= std::string::npos)

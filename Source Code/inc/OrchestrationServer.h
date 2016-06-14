@@ -14,7 +14,7 @@
 	#include "StdService.h"
 	#include "StsService.h"
 	#include "AppContainer.h"
-
+	#include "GlobalPolicies.h"
 
 	using namespace std;
 	
@@ -26,7 +26,9 @@
 				AppService appService;
 				StdService stdService;
 				
-			public:	
+			public:
+				double policyGoal;
+				GlobalPolicyType globalPolicy;
 				mutex mux;
 				StsService stsService;
 				long long counter;

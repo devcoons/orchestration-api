@@ -6,6 +6,8 @@ namespace Orchestration
 	{	
 		active = true;
 		setpriority(PRIO_PROCESS, getpid(), -20);
+		globalPolicy = GlobalPolicyType::Free;
+		policyGoal = 0;
 	}
 
 	Server::~Server()
@@ -96,6 +98,23 @@ namespace Orchestration
 								IndividualPolicies::Restricted((*app)->sharedMemoryPtr,ptr);								
 								break;
 						}
+						
+						switch(globalPolicy)
+						{
+							case GlobalPolicyType::Free:
+								GlobalPolicies::Free((*app)->sharedMemoryPtr,ptr,&stsService,policyGoal);
+								break;
+							case GlobalPolicyType::PowerBalancing:
+								GlobalPolicies::PowerBalancing((*app)->sharedMemoryPtr,ptr,&stsService,policyGoal);
+								break;
+							case GlobalPolicyType::CurrentBalancing:
+								GlobalPolicies::CurrentBalancing((*app)->sharedMemoryPtr,ptr,&stsService,policyGoal);
+								break;
+							case GlobalPolicyType::UtilizationBalancing:
+								GlobalPolicies::UtilizationBalancing((*app)->sharedMemoryPtr,ptr,&stsService,policyGoal);
+								break;					
+						}
+						
 						if((*app)->sharedMemoryPtr->tracker.getOffsetGoalMs()!=0)
 						{
 							offsetDecreasing = (*app)->sharedMemoryPtr->tracker.getOffsetGoalMs()/((*app)->sharedMemoryPtr->priority+25)<5;

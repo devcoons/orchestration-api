@@ -3,14 +3,17 @@
 	typedef enum
 	{
 		Free,
-		Powersaving
+		PowerBalancing,
+		CurrentBalancing,
+		UtilizationBalancing
 	}
 	GlobalPolicyType;
 
 	class GlobalPolicies
 	{
-	public:
-		static double overallAmpereGoal;
-		static void Free(void *, void *);
-		static void Powersaving(void *,void *);
+	public:			
+		static void Free(void *, void *, void *, double);
+		static void PowerBalancing(void *,void *, void *, double);
+		static void CurrentBalancing(void *,void *, void *, double);
+		static void UtilizationBalancing(void *,void *, void *, double);		
 	};

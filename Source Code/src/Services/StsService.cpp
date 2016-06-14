@@ -10,6 +10,21 @@
 
 	}
 
+	double StsService::getFilteredPowerAvg()
+	{
+		return junoStats.getFilteredPowerAvg();	
+	}
+	
+	double StsService::getFilteredCurrentAvg()
+	{		
+		return junoStats.getFilteredCurrentAvg();
+	}
+	
+	double StsService::getFilterUtilizationAvg()
+	{		
+		return junoStats.getFilterUtilizationAvg();
+	}
+	
 	void StsService::start(StatsDevice _device)
 	{
 		device = _device;

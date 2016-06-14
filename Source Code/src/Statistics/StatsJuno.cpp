@@ -29,6 +29,22 @@
 		
 	}
 	
+	double StatsJuno::getFilteredPowerAvg()
+	{
+		return (sysAllKalman[4].getValue() + sysAllKalman[5].getValue() + sysAllKalman[6].getValue() + sysAllKalman[7].getValue()) / 4;
+	}
+	
+	double StatsJuno::getFilteredCurrentAvg()
+	{
+		return (sysAllKalman[0].getValue() + sysAllKalman[1].getValue() + sysAllKalman[2].getValue() + sysAllKalman[3].getValue()) / 4;
+	}
+	
+	double StatsJuno::getFilterUtilizationAvg()
+	{
+		return cpuAllKalman.getValue();	
+	}
+	
+	
 	vector<string> StatsJuno::split(string str, char delimiter) 
 	{
 		vector<string> internal;
@@ -133,5 +149,7 @@
 		"\"},{\"name\":\""+sysData[5][0]+"\",\"data\":\""+sysData[5][1]+"\",\"kdata\":\""+std::to_string((long)sysAllKalman[5].getValue())+
 		"\"},{\"name\":\""+sysData[6][0]+"\",\"data\":\""+sysData[6][1]+"\",\"kdata\":\""+std::to_string((long)sysAllKalman[6].getValue())+
 		"\"},{\"name\":\""+sysData[7][0]+"\",\"data\":\""+sysData[7][1]+"\",\"kdata\":\""+std::to_string((long)sysAllKalman[7].getValue())+
+		"\"},{\"name\":\"CURR_AVG\",\"data\":\""+std::to_string((long)((stol(sysData[0][1])+stol(sysData[1][1])+stol(sysData[2][1])+stol(sysData[3][1]))/4))+"\",\"kdata\":\""+std::to_string((long)getFilteredCurrentAvg())+
+		"\"},{\"name\":\"POWER_AVG\",\"data\":\""+std::to_string((long)((stol(sysData[4][1])+stol(sysData[5][1])+stol(sysData[6][1])+stol(sysData[7][1]))/4))+"\",\"kdata\":\""+std::to_string((long)getFilteredPowerAvg())+
 		"\"}]";
 	}

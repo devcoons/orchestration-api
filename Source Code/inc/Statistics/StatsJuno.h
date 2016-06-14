@@ -37,9 +37,13 @@
 			StatsJuno();
 			~StatsJuno();
 			void update();
-			string retrieveUsage();		
-			string retrieveSensors();
+			
 			void updateUsage();
 			void updateSensors();
-			vector<string> split(string , char);		
+			string retrieveUsage();		
+			string retrieveSensors();	
+			double getFilteredPowerAvg();
+			double getFilteredCurrentAvg();
+			double getFilterUtilizationAvg();
+			vector<string> split(string , char);
 	};
