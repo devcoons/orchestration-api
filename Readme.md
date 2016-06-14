@@ -1,12 +1,12 @@
 ## Synopsis
 
-This C++ Library is intended to provide throughput balancing functions for applications.
-Current Version 0.1
+This C++ Library is intended to provide balancing functions for applications.
+Current Version 0.3
 
 ## Installation
 
 ```
-$ git clone https://gitlab.com/Io.D-Libraries/Linux-Throughput-Balancing.git
+$ git clone https://gitlab.com/io.d-libraries/orchestration-api.git
 $ make
 $ sudo make install
 ```
@@ -16,17 +16,17 @@ $ sudo make install
 Application Usage:
 ```
 Orchestrator::Client TConnector(getpid());
-TConnector.connect("127.0.0.1", 1101);
-TConnector.setPolicy(PolicyType::Balanced);
-TConnector.setThroughput(std::atoi(argv[1]), 0, 0);
-TConnector.registerImplementation(cpu1Impl, CPU);
-TConnector.registerImplementation(cpu2Impl, CPU);
-TConnector.registerImplementation(fpgaImpl, FPGA);
-TConnector.registerImplementation(pciImpl, PCI);
-TConnector.setProfiling(0);
+TConnector.connect("127.0.0.1", orchPort);
+TConnector.setAppName(appName);
+TConnector.setPolicy(IndividualPolicyType::); // Balanced or Restricted
+TConnector.setGoalMs(goal, lowestGoal, highestGoal);
+TConnector.setPriority(priority);
+TConnector.registerImplementation(cpu1Impl, ARMA57);
+TConnector.registerImplementation(cpu2Impl, ARMA53);
+TConnector.setProfiling(profiling);
 ..
 ..
-TConnector.execute();	
+TConnector.execute((void*)&args);	
 ..
 ..
 ```
